@@ -12,7 +12,7 @@ def load_image_with_white_bg(filename, size):
         pil_image = Image.open(filename).convert("RGBA")  # keep alpha
 
         # Resize while preserving alpha
-        pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
+        pil_image = pil_image.resize(size, Image.Resampling.NEAREST)
 
         # Convert to bytes and create a Pygame surface with alpha
         pil_data = pil_image.tobytes()
@@ -142,7 +142,8 @@ class Player:
                                 self.window_width,
                                 self.window_height,
                                 bullet_type="player",
-                                bullet_size=self.bullet_size
+                                bullet_size=self.bullet_size,
+                                sprite="Images/pbullet.png"
                             )
                         )
             else:
@@ -155,7 +156,8 @@ class Player:
                         self.window_width,
                         self.window_height,
                         bullet_type="player",
-                        bullet_size=self.bullet_size
+                        bullet_size=self.bullet_size,
+                        sprite="Images/pbullet.png"
                     )
                 )
             self.shoot_cooldown = self.shot_speed

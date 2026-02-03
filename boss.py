@@ -9,9 +9,9 @@ from bullet import Bullet
 import player
 
 
-pil_font_large = ImageFont.truetype("MelonPop.ttf", 48)  
-pil_font_medium = ImageFont.truetype("MelonPop.ttf", 36) 
-pil_font_small = ImageFont.truetype("MelonPop.ttf", 28)  
+pil_font_large = ImageFont.truetype("Melon Pop.ttf", 48)  
+pil_font_medium = ImageFont.truetype("Melon Pop.ttf", 36) 
+pil_font_small = ImageFont.truetype("Melon Pop.ttf", 28)  
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
 WHITE = (255, 255, 255)
@@ -228,7 +228,7 @@ class Boss():
                 angle = self.rotating_angle
                 target_x = center_x + math.cos(angle) * 400
                 target_y = center_y + math.sin(angle) * 400
-                self.shoot(target_x, target_y, 1, bullets)
+                self.shoot(target_x, target_y, 2, bullets)
                 self.rotating_angle += math.pi / 17  # Increment angle for next shot
                 self.last_shot_time = now
 
@@ -297,8 +297,8 @@ class Boss():
         #main attack logic
         if self.move_toward(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2, 5):
             now = pygame.time.get_ticks()
-            if now - self.blast_previous_shot_time >= 200 and self.total_blasts < 20:
-                if self.blast_shot_counter <= 20:
+            if now - self.blast_previous_shot_time >= 300 and self.total_blasts < 20:
+                if self.blast_shot_counter <= 8:
                     self.shoot(self.random_target[0], self.random_target[1], random.randint(3, 8), bullets)
                     self.blast_shot_counter += 1
                     self.random_target = (random.randint(0, WINDOW_WIDTH), random.randint(0, WINDOW_HEIGHT))

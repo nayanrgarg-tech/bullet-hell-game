@@ -11,7 +11,7 @@ def load_image_with_white_bg(filename, size):
         pil_image = Image.open(filename).convert("RGBA")
 
         # Resize while keeping alpha
-        pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
+        pil_image = pil_image.resize(size, Image.Resampling.NEAREST)
 
         # Convert to string INCLUDING alpha
         pil_data = pil_image.tobytes()
@@ -24,7 +24,7 @@ def load_image_with_white_bg(filename, size):
 
 
 class Bullet:
-    def __init__(self, x, y, vx, vy, window_width=1400, window_height=800, bullet_type="enemy", bullet_size=10):
+    def __init__(self, x, y, vx, vy, window_width=1400, window_height=800, bullet_type="enemy", bullet_size=10, sprite=None):
         self.x = x
         self.y = y
         self.vx = vx
@@ -34,12 +34,16 @@ class Bullet:
         self.window_height = window_height
         self.bullet_type = bullet_type
         # Try to load bullet image
-        bullet_file = "Images/pbullet.png" if bullet_type == "player" else "Images/bullets.png"
-        self.image = load_image_with_white_bg(bullet_file, (int(self.radius * 2), int(self.radius * 2)))
+        self.sprite = sprite
+        self.image = load_image_with_white_bg(self.sprite, (int(self.radius * 2), int(self.radius * 2)))
 
     def update(self):
-        self.x += self.vx
-        self.y += self.vy
+        if self.sprite == "Images/bullets.png" or self.sprite == "Images/pbullet.png":
+            self.x += self.vx
+            self.y += self.vy
+        elif self.sprite == "Images/bulletcurve.png":
+            self.x += self.vx + 10 * math.cos(pygame.time.get_ticks())  # Curving effect
+            self.y += self.vy
 
     def is_offscreen(self):
         return self.x < -200 or self.x > self.window_width + 200 or self.y < -10 or self.y > self.window_height + 10
@@ -59,7 +63,7 @@ class Bullet:
 class HomingBullet(Bullet):
     def __init__(self, x, y, speed, target, window_width=1400, window_height=800, bullet_size=10, bullet_type="player", image=None):
         # Start with 0 velocity; will home in update
-        super().__init__(x, y, 0, 0, window_width, window_height, bullet_type, bullet_size)
+        super().__init__(x, y, 0, 0, window_width, window_height, bullet_type, bullet_size,)
         self.speed = speed          # constant speed of homing bullet
         self.target = target        # should be an enemy object with x, y
         self.image = image      
@@ -74,3 +78,5 @@ class HomingBullet(Bullet):
 
         # Call normal Bullet movement
         super().update()
+
+        

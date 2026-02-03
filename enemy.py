@@ -17,7 +17,7 @@ def load_image_with_white_bg(filename, size):
         pil_image = Image.open(filename).convert("RGBA")
 
         # Resize while keeping alpha
-        pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
+        pil_image = pil_image.resize(size, Image.Resampling.NEAREST)
 
         # Convert to string with alpha
         pil_data = pil_image.tobytes()
@@ -30,7 +30,7 @@ def load_image_with_white_bg(filename, size):
 
 
 class Enemy:
-    def __init__(self, x, y, window_width=1200, window_height=800):
+    def __init__(self, x, y, type, window_width=1200, window_height=800):
         self.x = x
         self.y = y
         self.width = 50
@@ -39,8 +39,12 @@ class Enemy:
         self.shoot_timer = 0
         self.window_width = window_width
         self.window_height = window_height
+        self.type = type
         # Load enemy image with white background
-        self.image = load_image_with_white_bg("Images/enemybasic.png", (self.width, self.height))
+        if self.type == 1:
+            self.image = load_image_with_white_bg("Images/enemybasic.png", (self.width, self.height))
+        elif self.type == 2:
+            self.image = load_image_with_white_bg("Images/enemycurve.png", (self.width, self.height))
 
     def update(self, player_x, player_y):
         # Simple AI: move towards player
@@ -59,9 +63,14 @@ class Enemy:
             dy = player_y - self.y
             distance = math.sqrt(dx**2 + dy**2)
             if distance > 0:
-                bullet = Bullet(self.x + 15, self.y + 15, (dx / distance) * 4, (dy / distance) * 4, self.window_width, self.window_height, bullet_type="enemy")
-                self.shoot_timer = 0
-                return bullet
+                if self.type == 1:
+                    bullet = Bullet(self.x + 15, self.y + 15, (dx / distance) * 4, (dy / distance) * 4, self.window_width, self.window_height, bullet_type="enemy", bullet_size=10, sprite="Images/bullets.png")
+                    self.shoot_timer = 0
+                    return bullet
+                elif self.type == 2:
+                    bullet = Bullet(self.x + 15, self.y + 15, (dx / distance) * 5, (dy / distance) * 5, self.window_width, self.window_height, bullet_type="enemy", bullet_size=10, sprite="Images/bulletcurve.png")
+                    self.shoot_timer = 0
+                    return bullet
         return None
 
     def draw(self, screen):
