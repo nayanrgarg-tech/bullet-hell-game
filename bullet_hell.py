@@ -12,9 +12,9 @@ from PIL import ImageFont
 from io import BytesIO
 import os
 
-# Get the parent directory to find MelonPop.ttf
+# Get the parent directory to find Melon Pop.ttf
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-font_path = os.path.join(parent_dir, "MelonPop.ttf")
+font_path = os.path.join(parent_dir, "Melon Pop.ttf")
 
 # Initialize Pygame
 pygame.init()
@@ -64,6 +64,7 @@ def main():
         game_over = False
         boss_spawned = False
         boss = None
+        stage = 2
 
         # Game loop
         while running and not game_over:
@@ -89,10 +90,19 @@ def main():
                 timer = 450
             else:
                 timer = 300
-            enemy_spawn_timer += level.Level.get_level()  # Increase spawn rate with level
-            if (enemy_spawn_timer > timer) and level.Level.get_level() != 10:
+            enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 15  # Increase spawn rate with level
+            if (enemy_spawn_timer > timer) and level.Level.get_level() != 10 and stage == 1:
                 enemy_x = random.randint(0, WINDOW_WIDTH - 30)
-                enemies.append(Enemy(enemy_x, -30, WINDOW_WIDTH, WINDOW_HEIGHT))
+                enemies.append(Enemy(enemy_x, -30, 1, WINDOW_WIDTH, WINDOW_HEIGHT))
+                enemy_spawn_timer = 0
+            elif (enemy_spawn_timer > timer) and level.Level.get_level() != 10 and stage == 2:
+                enemy_x = random.randint(0, WINDOW_WIDTH - 30)
+                randtype = random.randint(1, 15)
+                type = 1
+                if randtype <= level.Level.get_level():
+                    type = 2
+
+                enemies.append(Enemy(enemy_x, -30, type, WINDOW_WIDTH, WINDOW_HEIGHT))
                 enemy_spawn_timer = 0
 
             # Update enemies and their bullets
@@ -143,7 +153,7 @@ def main():
                 for bullet in bullets[:]:
                     if bullet.bullet_type == "enemy" and saw_rect.colliderect(bullet.get_rect()):
                         bullets.remove(bullet)
-                        bullets.append(Bullet(saw_x, saw_y, -bullet.vx, -bullet.vy, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="player"))
+                        bullets.append(Bullet(saw_x, saw_y, -bullet.vx, -bullet.vy, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="player", sprite="Images/pbullet.png"))
 
             # Check collisions: player bullets hit enemies
             for bullet in bullets[:]:
@@ -181,7 +191,7 @@ def main():
 
 
             # Increase level based on scored
-            if score > level.Level.get_level() ** 2:
+            if score > (level.Level.get_level() + (stage - 1) * 10) ** 2: 
                 level.Level.increase_level()
                 player.health += player.healing_amount  # Heal player on level up
 
@@ -193,15 +203,19 @@ def main():
             # Draw everything
             screen.fill(BLACK)
             # Draw stars
-            for x, y, size in stars:
-                pygame.draw.circle(screen, (255, 255, 255), (x, y), size)
+            if stage == 1:
+                for x, y, size in stars:
+                    pygame.draw.circle(screen, (255, 255, 255), (x, y), size)
+            elif stage == 2:
+                for x, y, size in stars:
+                    pygame.draw.circle(screen, (255, random.randint(100, 255), random.randint(200, 255)), (x, y), size)
 
             # Draw scoreboard with white background and larger text
             try:
                 from PIL import ImageDraw, ImageFont
                 score_img = Image.new("RGBA", (600, 80), (255, 255, 255, 0))
                 draw = ImageDraw.Draw(score_img)
-                text = f"Score: {score}  Health: {player.health} Level: {level.Level.get_level()}"
+                text = f"Score: {score}  Health: {player.health} Stage: {stage}"
                 # Draw text in large font with black color for contrast
                 draw.text((20, 20), text, fill=WHITE, font=pil_font_medium)
                 score_surface = pygame.image.fromstring(score_img.tobytes(), score_img.size, "RGBA")
@@ -228,8 +242,13 @@ def main():
 
             if boss_spawned and boss.health <= 0:
                 boss.defeat()
-                level.Level.increase_level()
-                score += 50  # Bonus for defeating boss
+                level.Level.reset_level()
+                stage += 1
+                player.health += 5  # Heal player after boss defeat
+                previous_luck = player.min_luck
+                player.min_luck = 99 #Extra lucky for next upgrade
+                upgrades.show_upgrade_choices(player, screen, pil_font_small)
+                player.min_luck = previous_luck
                 del boss
                 boss_spawned = False
                 
