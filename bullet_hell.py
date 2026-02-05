@@ -11,6 +11,7 @@ from boss import Boss
 from PIL import ImageFont 
 from io import BytesIO
 import os
+from boss2 import Boss2
 
 # Get the parent directory to find Melon Pop.ttf
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -64,7 +65,7 @@ def main():
         game_over = False
         boss_spawned = False
         boss = None
-        stage = 2
+        stage = 1
 
         # Game loop
         while running and not game_over:
@@ -90,7 +91,7 @@ def main():
                 timer = 450
             else:
                 timer = 300
-            enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 15  # Increase spawn rate with level
+            enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 1  # Increase spawn rate with level
             if (enemy_spawn_timer > timer) and level.Level.get_level() != 10 and stage == 1:
                 enemy_x = random.randint(0, WINDOW_WIDTH - 30)
                 enemies.append(Enemy(enemy_x, -30, 1, WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -99,13 +100,19 @@ def main():
                 enemy_x = random.randint(0, WINDOW_WIDTH - 30)
                 randtype = random.randint(1, 15)
                 type = 1
+
                 if randtype <= level.Level.get_level():
                     type = 2
 
                 enemies.append(Enemy(enemy_x, -30, type, WINDOW_WIDTH, WINDOW_HEIGHT))
                 enemy_spawn_timer = 0
+            elif (enemy_spawn_timer > timer) and level.Level.get_level() != 10 and stage == 3:
+                enemy_x = random.randint(0, WINDOW_WIDTH - 30)
+                enemies.append(Enemy(enemy_x, -30, 1, WINDOW_WIDTH, WINDOW_HEIGHT))
+                enemies.append(Enemy(enemy_x, -30, 1, WINDOW_WIDTH, WINDOW_HEIGHT))
+                enemy_spawn_timer = 0
 
-            # Update enemies and their bullets
+             # Update enemies and their bullets
             for enemy in enemies[:]:
                 enemy.update(player.x, player.y)
                 
@@ -136,7 +143,7 @@ def main():
                         dy = bullet.vy
                         distance = math.sqrt(dx**2 + dy**2)
                         if distance > 0:
-                            reflected_bullet = Bullet(bullet.x, bullet.y, - (dx / distance) * 6, - (dy / distance) * 6, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="player")
+                            reflected_bullet = Bullet(bullet.x, bullet.y, - (dx / distance) * 6, - (dy / distance) * 6, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="player", sprite="Images/pbullet.png")
                             bullets.append(reflected_bullet)
                     else:
                         player.health -= 1            
@@ -184,11 +191,15 @@ def main():
             #Check collisions: player bullets hit boss
             for bullet in bullets[:]:
                 if bullet.bullet_type == "player" and boss_spawned:
-                    if bullet.get_rect().colliderect(boss.get_rect()):
+                    if bullet.get_rect().colliderect(boss.get_rect()) and boss is not None:
                         boss.take_damage(1)
                         if bullet in bullets:
                             bullets.remove(bullet)
-
+                    if stage == 3:
+                        if bullet.get_rect().colliderect(boss1.get_rect() ) and boss1 is not None:
+                            boss1.take_damage(1)
+                            if bullet in bullets:
+                                bullets.remove(bullet)
 
             # Increase level based on scored
             if score > (level.Level.get_level() + (stage - 1) * 10) ** 2: 
@@ -209,6 +220,9 @@ def main():
             elif stage == 2:
                 for x, y, size in stars:
                     pygame.draw.circle(screen, (255, random.randint(100, 255), random.randint(200, 255)), (x, y), size)
+            elif stage == 3:
+                for x, y, size in stars:
+                    pygame.draw.circle(screen, (random.randint(100, 255), random.randint(100, 255), 255), (x, y), size)
 
             # Draw scoreboard with white background and larger text
             try:
@@ -229,18 +243,31 @@ def main():
             for enemy in enemies:
                 enemy.draw(screen)
 
-            # Spawn boss at level 10
-            if level.Level.get_level() == 10 and not boss_spawned:
+            # Spawn boss at / 10
+            if level.Level.get_level() == 10 and stage == 1 and not boss_spawned:
                 enemies.clear()  # Clear existing enemies
                 boss = Boss(WINDOW_WIDTH // 2, 100, 300, "Images/boss1.png", 1, player, bullets)    
                 boss_spawned = True
-            
+            elif level.Level.get_level() == 10 and stage == 2 and not boss_spawned:
+                enemies.clear()  # Clear existing enemies
+                boss = Boss2(WINDOW_WIDTH // 2, 100, 750, "Images/boss2.png", 1, player, bullets)    
+                boss_spawned = True
+            elif level.Level.get_level() == 10 and stage == 3 and not boss_spawned:
+                enemies.clear() # Clear existing enemies
+                boss = Boss(WINDOW_WIDTH // 2 - 200, 100, 500, "Images/boss1.png", 1, player, bullets)    
+                boss1 = Boss(WINDOW_WIDTH // 2 + 200, 100, 500, "Images/boss1.png", 1, player, bullets)    
+                boss_spawned = True
+
             # Update boss
             if boss_spawned:
                 boss.draw(screen)
                 boss.choose_attack(bullets)
+                if stage == 3:
+                    boss1.draw(screen)
+                    boss1.choose_attack(bullets)
 
-            if boss_spawned and boss.health <= 0:
+            # Check boss defeat
+            if boss_spawned and boss.health <= 0 and stage in [1, 2]:
                 boss.defeat()
                 level.Level.reset_level()
                 stage += 1
@@ -249,8 +276,25 @@ def main():
                 player.min_luck = 99 #Extra lucky for next upgrade
                 upgrades.show_upgrade_choices(player, screen, pil_font_small)
                 player.min_luck = previous_luck
-                del boss
+                boss = None
                 boss_spawned = False
+            if stage == 3 and level.Level.get_level() == 10:
+                if boss.health <= 0:
+                    boss.defeat()
+                    boss = None
+                if boss1.health <= 0:
+                    boss1.defeat()
+                    boss1 = None
+                if boss is None and boss1 is None:
+                    level.Level.reset_level()
+                    stage += 1
+                    player.health += 5  # Heal player after boss defeat
+                    previous_luck = player.min_luck
+                    player.min_luck = 99 #Extra lucky for next upgrade
+                    upgrades.show_upgrade_choices(player, screen, pil_font_small)
+                    player.min_luck = previous_luck
+                    boss_spawned = False
+
                 
 
             pygame.display.flip()

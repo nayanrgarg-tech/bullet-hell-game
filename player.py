@@ -165,7 +165,7 @@ class Player:
         if self.homing_count > 0 and self.homing_cooldown <= 0:
             for i in range(self.homing_count):
                 target = enemies[0] if enemies else None
-                if target:
+                if target is not None:
                     # Spread in fan
                     angle_to_target = math.atan2(target.y - player_center_y, target.x - player_center_x)
                     offset = (i - (self.homing_count - 1)/2) * math.radians(self.multishot_spread_deg)
@@ -186,7 +186,6 @@ class Player:
                     window_height=self.window_height,
                     bullet_size=self.bullet_size,
                     bullet_type="player",
-                    image=self.homing_bullet_image
                 )
                 bullet.vx = vx
                 bullet.vy = vy
