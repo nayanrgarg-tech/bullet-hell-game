@@ -6,8 +6,6 @@ from PIL import ImageFont
 from PIL import Image
 import math
 from bullet import Bullet
-import player
-
 
 pil_font_large = ImageFont.truetype("Melon Pop.ttf", 48)  
 pil_font_medium = ImageFont.truetype("Melon Pop.ttf", 36) 
@@ -177,7 +175,6 @@ class Boss():
 
         # Main attack logic
         if self.array_shot_counter < 10:
-            # Move boss toward dynamic target (optional; you can customize pattern)
             target_x = start_x + self.array_shot_counter * 140 * (-1 if self.direction in [2, 4] else 1)
             target_y = start_y + self.array_shot_counter * 80 * (-1 if self.direction in [3, 4] else 1)
             self.move_toward(target_x, target_y, 10)
@@ -427,7 +424,7 @@ class Boss():
         dy = target_y - self.y
         distance = math.sqrt(dx**2 + dy**2)
         if distance > 0:
-            bullet = Bullet(self.x, self.y, (dx / distance) * speed, (dy / distance) * speed, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="enemy")
+            bullet = Bullet(self.x, self.y, (dx / distance) * speed, (dy / distance) * speed, WINDOW_WIDTH, WINDOW_HEIGHT, bullet_type="enemy", sprite="Images/bullets.png")
             bullets.append(bullet)
 
         return None
