@@ -163,11 +163,19 @@ UPGRADES = [
 ]
 
 def get_random_upgrades(num_choices, player):
-    useable_upgrades = UPGRADES.copy()
+    useable_upgrades = [u for u in UPGRADES if u.current_stack < u.get_max_stack()]
     chosen_upgrades = []
 
+    if not useable_upgrades:
+        return chosen_upgrades
+
     for _ in range(num_choices):
+        if not useable_upgrades:
+            break
+        attempts = 0
         while True:
+            if not useable_upgrades:
+                break
             luck = random.randint(player.min_luck, 100)
             tempUpgrade = random.choice(useable_upgrades)
             tempRarity = tempUpgrade.get_rarity()
@@ -201,9 +209,15 @@ def get_random_upgrades(num_choices, player):
                     useable_upgrades.remove(tempUpgrade)
                     break
                 else:
+                    attempts += 1
+                    if attempts > 200:
+                        break
                     continue
             else:
                 # If upgrade has reached max stack, skip it
+                attempts += 1
+                if attempts > 200:
+                    break
                 continue
 
     return chosen_upgrades
@@ -220,6 +234,8 @@ def show_upgrade_choices(player, screen, pil_font):
     # Dynamically get number of upgrades
     num_choices = getattr(player, "upgrade_choices", 3)
     upgrade_choice = get_random_upgrades(num_choices, player)
+    if not upgrade_choice:
+        return None
 
     screen_width, screen_height = screen.get_size()
     choice_height = 100  # vertical space per upgrade
