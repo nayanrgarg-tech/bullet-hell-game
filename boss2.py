@@ -147,7 +147,7 @@ class Boss2:
         if not hasattr(self, 'shot_count'):
             self.shot_count = 0
 
-        if self.move_toward(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 10):
+        if self.move_toward(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50, 3):
             now = pygame.time.get_ticks()
             if now - self.last_shot_time > 500:  # Shoot every 500 ms
                 for i in range(3):
@@ -244,8 +244,6 @@ class Boss2:
             self.shoot(WINDOW_WIDTH, self.random_position_y, 10, bullets, random.randint(5, 10), random.random() * 0.008)
             self.shoot(WINDOW_WIDTH, self.random_position_y, 10, bullets, random.randint(5, 10), random.random() * 0.007)
             self.shoot(WINDOW_WIDTH, self.random_position_y, 10, bullets, random.randint(5, 10), random.random() * 0.006)
-            self.shoot(WINDOW_WIDTH, self.random_position_y, 10, bullets, random.randint(5, 10), random.random() * 0.005)
-            self.shoot(WINDOW_WIDTH, self.random_position_y, 10, bullets, random.randint(5, 10), random.random() * 0.004)
             self.shot_count += 1
             self.random_position_y = random.randint(100, WINDOW_HEIGHT - 100)
 
@@ -347,8 +345,6 @@ class Boss2:
                 self.shoot(1400, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.shoot(1400, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.shoot(1400, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
-                self.shoot(1400, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
-                self.shoot(1400, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.wall_position += 1
             if self.wall_position >= 10:
                 self.direction = 2
@@ -356,8 +352,6 @@ class Boss2:
                 self.wall_position = 0
         elif self.direction == 2:
             if self.move_toward(1350, self.wall_position * 80, 15):
-                self.shoot(0, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
-                self.shoot(0, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.shoot(0, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.shoot(0, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
                 self.shoot(0, self.wall_position * 80, 8, bullets, random.randint(5, 20), random.random() * 0.005)
