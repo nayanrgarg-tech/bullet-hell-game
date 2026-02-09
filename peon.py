@@ -23,12 +23,12 @@ def load_image_with_white_bg(filename, size):
 
 
 class Peon:
-    def __init__(self, x, y, peon_type, window_width=1400, window_height=800):
+    def __init__(self, x, y, peon_type, health=5, window_width=1400, window_height=800):
         self.x = x
         self.y = y
         self.width = 30
         self.height = 30
-        self.health = 1
+        self.health = health
         self.peon_type = peon_type
         self.window_width = window_width
         self.window_height = window_height
@@ -45,7 +45,7 @@ class Peon:
     def shoot(self, player_x, player_y):
         """Returns a bullet if peon should shoot, otherwise None"""
         # Peons shoot slower than regular enemies
-        if self.peon_type == 1 and self.shoot_timer > 30:  # Shoot every ~0.5 seconds
+        if self.peon_type == 1 and self.shoot_timer > 120:  # Shoot every ~1 second
             dx = player_x - self.x
             dy = player_y - self.y
             distance = math.sqrt(dx**2 + dy**2)

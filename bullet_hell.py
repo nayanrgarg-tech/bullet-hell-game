@@ -12,6 +12,7 @@ from PIL import ImageFont
 from io import BytesIO
 import os
 from boss2 import Boss2
+from boss3 import Boss3
 
 # Get the parent directory to find Melon Pop.ttf
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,7 +97,7 @@ def main():
             if stage in [1, 2, 3]:
                 enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 13  # Increase spawn rate with level
             elif stage == 4:
-                enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 50 # Fast rush of enemies
+                enemy_spawn_timer += level.Level.get_level() + (stage - 1) * 30 # Fast rush of enemies
             if (enemy_spawn_timer > timer) and level.Level.get_level() != 10 and stage == 1:
                 enemy_x = random.randint(0, WINDOW_WIDTH - 30)
                 enemies.append(Enemy(enemy_x, -30, 1, WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -209,24 +210,30 @@ def main():
                                     player.health += 1
                             if bullet in bullets:
                                 bullets.remove(bullet)
-                            score += 1
+                            if stage == 4 and getattr(enemy, "type", None) == 3:
+                                if random.randint(1, 4) == 1:
+                                    score += 1
+                            else:
+                                score += 1
                             break
                     # Check collision with peons
                     for peon in all_peons[:]:
                         if bullet.get_rect().colliderect(peon.get_rect()):
-                            if peon in all_peons:
-                                all_peons.remove(peon)
-                                for enemy in enemies:
-                                    if hasattr(enemy, 'peons') and peon in enemy.peons:
-                                        enemy.peons.remove(peon)
-                                        break
-                                player.kill_count += 1
-                                # Vampireism heal every 15 kills
-                                if player.vampireism and player.kill_count % 15 == 0:
-                                    player.health += 1
+                            peon.health -= 1
+                            if peon.health <= 0:
+                                if peon in all_peons:
+                                    all_peons.remove(peon)
+                                    for enemy in enemies:
+                                        if hasattr(enemy, 'peons') and peon in enemy.peons:
+                                            enemy.peons.remove(peon)
+                                            break
+                                    player.kill_count += 1
+                                    # Vampireism heal every 15 kills
+                                    if player.vampireism and player.kill_count % 15 == 0:
+                                        player.health += 1
+                                score += 1
                             if bullet in bullets:
                                 bullets.remove(bullet)
-                            score += 1
                             break
 
             # Check collisions: enemies hit player
@@ -335,6 +342,10 @@ def main():
                 boss = Boss(WINDOW_WIDTH // 2 - 200, 100, 500, "Images/boss1.png", 1, player, bullets)    
                 boss1 = Boss(WINDOW_WIDTH // 2 + 200, 100, 500, "Images/boss1.png", 1, player, bullets)    
                 boss_spawned = True
+            elif level.Level.get_level() == 10 and stage == 4 and not boss_spawned:
+                enemies.clear()  # Clear existing enemies
+                boss = Boss3(WINDOW_WIDTH // 2, 120, 2000, "Images/boss3.png", 1, player, bullets, enemies)
+                boss_spawned = True
 
             # Update boss
             if boss_spawned:
@@ -350,6 +361,16 @@ def main():
                 boss.defeat()
                 level.Level.reset_level()
                 stage += 1
+                player.health += 5  # Heal player after boss defeat
+                previous_luck = player.min_luck
+                player.min_luck = 99 #Extra lucky for next upgrade
+                upgrades.show_upgrade_choices(player, screen, pil_font_small)
+                player.min_luck = previous_luck
+                boss = None
+                boss_spawned = False
+            if boss_spawned and boss is not None and boss.health <= 0 and stage == 4:
+                boss.defeat()
+                level.Level.reset_level()
                 player.health += 5  # Heal player after boss defeat
                 previous_luck = player.min_luck
                 player.min_luck = 99 #Extra lucky for next upgrade
