@@ -71,7 +71,7 @@ class Enemy:
             if self.time_since_spawn < 60:  # Move slower for first 1 sec
                 speed = 1
             else:
-                speed = self.time_since_spawn / 5  # Gradually increase speed
+                speed = self.time_since_spawn / 30  # Gradually increase speed
             dx = player_x - self.x
             dy = player_y - self.y
             distance = math.sqrt(dx**2 + dy**2)
@@ -93,13 +93,13 @@ class Enemy:
             
             # Spawn a turret periodically
             self.turret_spawn_timer += 1
-            if self.turret_spawn_timer >= 60:  # Spawn turret every 1 second
-                peon = Peon(self.x - 20, self.y - 20, 1, self.window_width, self.window_height)
+            if self.turret_spawn_timer >= 120:  # Spawn turret every 2 seconds
+                peon = Peon(self.x - 20, self.y - 20, 1, 2, self.window_width, self.window_height)
                 self.peons.append(peon)
                 self.turret_spawn_timer = 0
             
             # Pick new position periodically
-            if distance < 10 or self.turret_spawn_timer % 180 == 0:
+            if distance < 10 or self.turret_spawn_timer % 120 == 0:
                 self.random_position = (random.randint(0, self.window_width), random.randint(0, self.window_height))
 
 
