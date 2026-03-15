@@ -14,9 +14,14 @@ import os
 from boss2 import Boss2
 from boss3 import Boss3
 
-# Get the parent directory to find Melon Pop.ttf
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-font_path = os.path.join(parent_dir, "Melon Pop.ttf")
+# Find Melon Pop.ttf next to this file first, then fall back to the parent directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+font_candidates = [
+    os.path.join(script_dir, "Melon Pop.ttf"),
+    os.path.join(parent_dir, "Melon Pop.ttf"),
+]
+font_path = next((path for path in font_candidates if os.path.exists(path)), font_candidates[0])
 
 # Initialize Pygame
 pygame.init()
